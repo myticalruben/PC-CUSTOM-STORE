@@ -1,0 +1,10 @@
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: custom_pc_store
+    ports:
+      - "3306:3306"
+    volumes:
+      -  ~/.mysql_data:/var/lib/mysql
