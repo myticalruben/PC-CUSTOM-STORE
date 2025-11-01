@@ -8,7 +8,7 @@ import com.custom.pc.model.Role;
 import com.custom.pc.model.User;
 import com.custom.pc.repository.RoleRepository;
 import com.custom.pc.repository.UserRepository;
-import com.custom.pc.sercurity.JwtUtils;
+import com.custom.pc.security.JwtUtils;
 import com.custom.pc.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
