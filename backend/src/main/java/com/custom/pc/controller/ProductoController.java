@@ -19,7 +19,7 @@ import com.custom.pc.service.ProductoService;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/inventario/producto")
+@RequestMapping("/api/inventario/productos")
 public class ProductoController {
     
     @Autowired
@@ -29,6 +29,12 @@ public class ProductoController {
     public ResponseEntity<?> allProducto() {
         return ResponseEntity.ok(productoService.findAllProducto());
     }
+
+    @GetMapping("/listar/{id}")
+    public ResponseEntity<?> findProductoById(@PathVariable Long id) {
+        return ResponseEntity.ok(productoService.findProductoById(id));
+    }
+
 
     @GetMapping("/listar/categorias/{id}")
     public ResponseEntity<?> allProductobyCategoria(@PathVariable Long id) {

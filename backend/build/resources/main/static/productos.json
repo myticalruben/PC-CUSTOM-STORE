@@ -1,0 +1,16 @@
+[
+    {
+        "p_id": 1,
+        "p_nombre": "Smartphone XYZ",
+        "p_codigo": "ELEC001",
+        "p_precio": 699.99,
+        "p_stock": 50,
+        "p_fecha_creacion": "2025-11-02",
+        "p_categoria_id": {
+            "c_id": 1,
+            "c_nombre": "Electrnica",
+            "c_descripcion": "Dispositivos y gadgets electrnicos",
+            "c_fecha_creacion": "2025-11-02"
+        }
+    }
+]

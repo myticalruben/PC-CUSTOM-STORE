@@ -11,6 +11,7 @@ import com.custom.pc.repository.ProductoRepository;
 import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class ProductoService {
     
     @Autowired
@@ -28,12 +29,10 @@ public class ProductoService {
         return productoRepository.buscaProductoPorCategoriaId(c_id);
     }
 
-    @Transactional
     public Producto saveProducto(Producto producto) {
         return productoRepository.save(producto);
     }
     
-    @Transactional
     public void deleteProducto(Long p_id) {
         productoRepository.deleteById(p_id);
     }

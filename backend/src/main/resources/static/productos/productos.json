@@ -1,0 +1,10 @@
+{
+    "p_nombre": "Tarjeta Radeon RX 6800 XT",
+    "p_codigo": "grafica005",
+    "p_precio": 60,
+    "p_stock": 200,
+    "p_fecha_creacion": "2025-11-09",
+    "p_categoria_id": {
+        "c_id": 1
+    }
+}
