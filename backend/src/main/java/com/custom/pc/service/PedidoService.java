@@ -16,9 +16,6 @@ public class PedidoService {
     private PedidoRepository pedidoRepository;
     
     @Autowired
-    private ProductoRepository productoRepository;
-    
-    @Autowired
     private FacturaRepository facturaRepository;
     
     //Nos da todos los pedidos ordenados por fecha de actualización descendente
