@@ -1,9 +1,9 @@
-insert into categorias(c_nombre, c_descripcion, c_fecha_creacion) values
-('Electrónica', 'Dispositivos y gadgets electrónicos', now()),
-('Ropa', 'Prendas de vestir para todas las edades', now()),
-('Hogar', 'Artículos para el hogar y decoración', now()),
-('Libros', 'Libros de diversos géneros y autores', now()),
-('Deportes', 'Equipamiento y ropa deportiva', now());
+insert into categorias(c_nombre, c_descripcion) values
+('Electrónica', 'Dispositivos y gadgets electrónicos'),
+('Ropa', 'Prendas de vestir para todas las edades'),
+('Hogar', 'Artículos para el hogar y decoración'),
+('Libros', 'Libros de diversos géneros y autores'),
+('Deportes', 'Equipamiento y ropa deportiva');
 
 insert into productos(p_nombre, p_precio, p_stock, p_fecha_creacion, p_codigo, p_categoria_id) values
 ('Smartphone XYZ', 699.99, 50, now(), 'ELEC001', 1),
