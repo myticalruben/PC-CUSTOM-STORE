@@ -1,10 +1,11 @@
 {
-    "p_nombre": "Pantalla de 50 pulgada",
-    "p_codigo": "Pantalla 005",
-    "p_precio": 60,
+    "p_nombre": "RTX 5090 TI",
+    "p_codigo": "GRAFICA 1000",
+    "p_precio": 60000,
     "p_stock": 200,
     "p_fecha_creacion": "2025-11-09",
     "p_categoria_id": {
         "c_id": 1
     }
+
 }

@@ -96,9 +96,9 @@ const inventoryReducer = (state, action) => {
         productos: state.productos.map(producto =>
           producto.p_id === action.payload.p_id ? action.payload : producto
         ),
-        selectedProducto: 
-          state.selectedProducto?.p_id === action.payload.p_id 
-            ? action.payload 
+        selectedProducto:
+          state.selectedProducto?.p_id === action.payload.p_id
+            ? action.payload
             : state.selectedProducto
       };
 
@@ -108,9 +108,9 @@ const inventoryReducer = (state, action) => {
         categorias: state.categorias.map(categoria =>
           categoria.c_id === action.payload.c_id ? action.payload : categoria
         ),
-        selectedCategoria: 
-          state.selectedCategoria?.c_id === action.payload.c_id 
-            ? action.payload 
+        selectedCategoria:
+          state.selectedCategoria?.c_id === action.payload.c_id
+            ? action.payload
             : state.selectedCategoria
       };
 
@@ -118,9 +118,9 @@ const inventoryReducer = (state, action) => {
       return {
         ...state,
         productos: state.productos.filter(producto => producto.p_id !== action.payload),
-        selectedProducto: 
-          state.selectedProducto?.p_id === action.payload 
-            ? null 
+        selectedProducto:
+          state.selectedProducto?.p_id === action.payload
+            ? null
             : state.selectedProducto
       };
 
@@ -128,9 +128,9 @@ const inventoryReducer = (state, action) => {
       return {
         ...state,
         categorias: state.categorias.filter(categoria => categoria.c_id !== action.payload),
-        selectedCategoria: 
-          state.selectedCategoria?.c_id === action.payload 
-            ? null 
+        selectedCategoria:
+          state.selectedCategoria?.c_id === action.payload
+            ? null
             : state.selectedCategoria
       };
 
@@ -158,6 +158,7 @@ const inventoryReducer = (state, action) => {
 const InventoryContext = createContext();
 
 // Hook personalizado
+// eslint-disable-next-line react-refresh/only-export-components
 export const useInventory = () => {
   const context = useContext(InventoryContext);
   if (!context) {
@@ -180,13 +181,13 @@ export const InventoryProvider = ({ children }) => {
           productoService.getAllProductos(),
           categoriaService.getAllCategorias()
         ]);
-        
+
         dispatch({ type: ACTION_TYPES.SET_PRODUCTOS, payload: productos });
         dispatch({ type: ACTION_TYPES.SET_CATEGORIAS, payload: categorias });
-      } catch (error) {
-        dispatch({ 
-          type: ACTION_TYPES.SET_ERROR, 
-          payload: 'Error al cargar el inventario' 
+      } catch{
+        dispatch({
+          type: ACTION_TYPES.SET_ERROR,
+          payload: 'Error al cargar el inventario'
         });
       }
     },
@@ -197,12 +198,14 @@ export const InventoryProvider = ({ children }) => {
       try {
         const nuevoProducto = await productoService.createProducto(productoData);
         dispatch({ type: ACTION_TYPES.ADD_PRODUCTO, payload: nuevoProducto });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false }); // ← AÑADIR ESTA LÍNEA
         return nuevoProducto;
       } catch (error) {
-        dispatch({ 
-          type: ACTION_TYPES.SET_ERROR, 
-          payload: 'Error al crear el producto' 
+        dispatch({
+          type: ACTION_TYPES.SET_ERROR,
+          payload: 'Error al crear el producto'
         });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false }); // ← AÑADIR ESTA LÍNEA
         throw error;
       }
     },
@@ -213,12 +216,14 @@ export const InventoryProvider = ({ children }) => {
       try {
         const nuevaCategoria = await categoriaService.createCategoria(categoriaData);
         dispatch({ type: ACTION_TYPES.ADD_CATEGORIA, payload: nuevaCategoria });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false }); // ← AÑADIR ESTA LÍNEA
         return nuevaCategoria;
       } catch (error) {
-        dispatch({ 
-          type: ACTION_TYPES.SET_ERROR, 
-          payload: 'Error al crear la categoría' 
+        dispatch({
+          type: ACTION_TYPES.SET_ERROR,
+          payload: 'Error al crear la categoría'
         });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false }); // ← AÑADIR ESTA LÍNEA
         throw error;
       }
     },
@@ -228,13 +233,16 @@ export const InventoryProvider = ({ children }) => {
       try {
         // En una implementación real, llamarías al servicio de actualización
         const productoActualizado = { ...productoData, p_id: productoId };
-        dispatch({ type: ACTION_TYPES.UPDATE_PRODUCTO, payload: productoActualizado });
-        return productoActualizado;
+        const prod = await productoService.actualizarProducto(productoId,productoActualizado);
+        dispatch({ type: ACTION_TYPES.UPDATE_PRODUCTO, payload: prod });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+        return prod;
       } catch (error) {
-        dispatch({ 
-          type: ACTION_TYPES.SET_ERROR, 
-          payload: 'Error al actualizar el producto' 
+        dispatch({
+          type: ACTION_TYPES.SET_ERROR,
+          payload: 'Error al actualizar el producto'
         });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
         throw error;
       }
     },
@@ -244,13 +252,63 @@ export const InventoryProvider = ({ children }) => {
       try {
         // En una implementación real, llamarías al servicio de actualización
         const categoriaActualizada = { ...categoriaData, c_id: categoriaId };
-        dispatch({ type: ACTION_TYPES.UPDATE_CATEGORIA, payload: categoriaActualizada });
-        return categoriaActualizada;
+        const update = await categoriaService.createCategoria(categoriaActualizada)
+        dispatch({ type: ACTION_TYPES.UPDATE_CATEGORIA, payload: update });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+        return update;
       } catch (error) {
-        dispatch({ 
-          type: ACTION_TYPES.SET_ERROR, 
-          payload: 'Error al actualizar la categoría' 
+        dispatch({
+          type: ACTION_TYPES.SET_ERROR,
+          payload: 'Error al actualizar la categoría'
         });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+        throw error;
+      }
+    },
+
+    // Eliminar producto
+    deleteProducto: async (productoId) => {
+      dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
+      try {
+        // En una implementación real, esto llamaría a productoService.deleteProducto()
+        const deleteProducto = await productoService.deleteProducto(productoId);
+        dispatch({ type: ACTION_TYPES.DELETE_PRODUCTO, payload: productoId });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+        return deleteProducto
+      } catch (error) {
+        dispatch({
+          type: ACTION_TYPES.SET_ERROR,
+          payload: 'Error al eliminar el producto'
+        });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+        throw error;
+      }
+    },
+
+    // Eliminar categoría
+    deleteCategoria: async (categoriaId) => {
+      dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
+      try {
+        // Verificar si la categoría tiene productos asociados
+        const deleteCategoria = await categoriaService.deleteCategoria(categoriaId);
+        const productosEnCategoria = state.productos.filter(
+          producto => producto.p_categoria_id?.c_id === categoriaId
+        );
+
+        if (productosEnCategoria.length > 0) {
+          throw new Error('No se puede eliminar una categoría que tiene productos asociados');
+        }
+
+        // En una implementación real, esto llamaría a categoriaService.deleteCategoria()
+        dispatch({ type: ACTION_TYPES.DELETE_CATEGORIA, payload: categoriaId });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+        return deleteCategoria
+      } catch (error) {
+        dispatch({
+          type: ACTION_TYPES.SET_ERROR,
+          payload: error.message || 'Error al eliminar la categoría'
+        });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
         throw error;
       }
     },
@@ -324,7 +382,7 @@ export const InventoryProvider = ({ children }) => {
     const lowStockCount = state.productos.filter(p => p.p_stock < 5).length;
     const outOfStockCount = state.productos.filter(p => p.p_stock === 0).length;
     const totalValue = state.productos.reduce(
-      (sum, producto) => sum + (producto.p_precio * producto.p_stock), 
+      (sum, producto) => sum + (producto.p_precio * producto.p_stock),
       0
     );
 

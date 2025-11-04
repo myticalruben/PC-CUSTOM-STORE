@@ -50,7 +50,7 @@ public class Producto {
     private LocalDate p_fecha_creacion;
     
     @JoinColumn(name = "p_categoria_id", referencedColumnName = "c_id")
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Categoria p_categoria_id;
 
     public Producto(String p_nombre, String p_codigo, Double p_precio, Integer p_stock, LocalDate p_fecha_creacion, Categoria p_categoria_id) {

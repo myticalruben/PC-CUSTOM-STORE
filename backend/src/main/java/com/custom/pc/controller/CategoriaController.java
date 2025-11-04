@@ -40,9 +40,8 @@ public class CategoriaController {
         return new ResponseEntity<Categoria>(categoriaService.saveCategoria(categoria), HttpStatus.ACCEPTED);
     }
 
-    @DeleteMapping("/eliminar")
-    public ResponseEntity<Void> eliminarCategoria(@RequestBody CategoriaDTO categoriaDTO) {
-        categoriaService.deleteCategoria(categoriaDTO.getC_id());
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @DeleteMapping("/eliminar/{id}")
+    public ResponseEntity<?> eliminarCategoria(@PathVariable Long id) {
+        return categoriaService.deleteCategoria(id);
     }
 }

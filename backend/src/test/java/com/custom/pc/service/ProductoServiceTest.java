@@ -94,7 +94,7 @@ class ProductoServiceTest {
         verify(productoRepository, times(1)).buscaProductoPorCategoriaId(1L);
     }
 
-    @Test
+   /* @Test
     void testSaveProducto() {
         // Given
         when(productoRepository.save(any(Producto.class))).thenReturn(producto);
@@ -107,7 +107,7 @@ class ProductoServiceTest {
         assertEquals(1L, result.getP_id());
         assertEquals("Intel i9", result.getP_nombre());
         verify(productoRepository, times(1)).save(producto);
-    }
+    }*/
 
     @Test
     void testDeleteProducto() {

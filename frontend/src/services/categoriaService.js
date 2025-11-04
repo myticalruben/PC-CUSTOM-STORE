@@ -17,5 +17,10 @@ export const categoriaService = {
   createCategoria: async (categoriaData) => {
     const response = await api.post('/inventario/categorias/agregar', categoriaData);
     return response.data;
+  },
+
+  deleteCategoria: async (id) => {
+    const response = await api.delete(`/inventario/categorias/eliminar/${id}`);
+    return response.data;
   }
 };

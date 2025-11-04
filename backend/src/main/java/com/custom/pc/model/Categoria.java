@@ -30,7 +30,7 @@ public class Categoria {
     
     private String c_descripcion;
 
-    @OneToMany(mappedBy = "p_categoria_id", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "p_categoria_id", orphanRemoval = true)
     @JsonIgnore
     private List<Producto> producto;
     

@@ -1,16 +1,10 @@
 package com.custom.pc.controller;
 
+import com.custom.pc.dto.ProductoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 import com.custom.pc.model.Producto;
@@ -42,13 +36,18 @@ public class ProductoController {
     }
 
     @PostMapping("/agregar")
-    public ResponseEntity<?> agregarCategoria(@RequestBody Producto producto) {
+    public ResponseEntity<?> productoCategoria(@RequestBody Producto producto) {
         return new ResponseEntity<Producto>(productoService.saveProducto(producto), HttpStatus.ACCEPTED);
     }
 
-    @DeleteMapping("/eliminar")
-    public ResponseEntity<Void> eliminarCategoria(@RequestBody Producto producto) {
-        productoService.deleteProducto(producto.getP_id());
+    @PutMapping("/actualizar/{id}")
+    public ResponseEntity<?> actualizarCategoria(@PathVariable Long id, @RequestBody Producto producto) {
+        return new ResponseEntity<Producto>(productoService.updateProducto(id, producto), HttpStatus.ACCEPTED);
+    }
+
+    @DeleteMapping("/eliminar/{id}")
+    public ResponseEntity<Void> eliminarCategoria(@PathVariable Long id) {
+        productoService.deleteProducto(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

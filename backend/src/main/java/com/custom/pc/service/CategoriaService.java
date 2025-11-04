@@ -3,6 +3,8 @@ package com.custom.pc.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.custom.pc.model.Categoria;
@@ -10,9 +12,13 @@ import com.custom.pc.repository.CategoriaRepository;
 
 @Service
 public class CategoriaService {
-    
+
+
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private ProductoService productoService;
 
     public List<Categoria> findAllCategoria() {
         return categoriaRepository.findAll();
@@ -26,7 +32,13 @@ public class CategoriaService {
         return categoriaRepository.findById(c_id).orElse(null);
     }
 
-    public void deleteCategoria(Long c_id) {
+    public ResponseEntity<?> deleteCategoria(Long c_id) {
+        var categorias = productoService.findByPCategoriaId_CId(c_id);
+        if (!categorias.isEmpty()) {
+            return new ResponseEntity("No se puede eliminar la categoria por que tiene elementos",
+                    HttpStatus.BAD_REQUEST);
+        }
         categoriaRepository.deleteById(c_id);
+        return new ResponseEntity("", HttpStatus.ACCEPTED);
     }
 }

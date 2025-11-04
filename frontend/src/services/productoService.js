@@ -17,7 +17,15 @@ export const productoService = {
     },
 
     createProducto: async (productoData) => {
-        const response = await api.post("/inventario/productos/crear", productoData);
+        const response = await api.post("/inventario/productos/agregar", productoData);
+        return response.data;
+    },
+    actualizarProducto: async (id, actualizarData) => {
+        const response = await api.put(`/inventario/productos/actualizar/${id}`, actualizarData);
+        return response.data;
+    },
+    deleteProducto: async (id) => {
+        const response = await api.delete(`/inventario/productos/eliminar/${id}`);
         return response.data;
     }
 }
