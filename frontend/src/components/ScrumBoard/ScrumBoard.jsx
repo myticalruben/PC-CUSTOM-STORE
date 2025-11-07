@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { usePedidos } from '../../contexts/PedidosContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { Column } from './Column';
-import { PedidoCard } from './PedidoCard';
+//import { PedidoCard } from './PedidoCard';
 import { PedidoDetails } from './PedidoDetails';
 import { LoadingSpinner } from '../Common/LoadingSpinner';
 import { Plus, Filter, Search, RefreshCw, AlertTriangle } from 'lucide-react';
@@ -24,6 +24,7 @@ export const ScrumBoard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('all');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
 
   // Estados del tablero
   const estados = [
@@ -42,8 +43,8 @@ export const ScrumBoard = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(pedido =>
-        pedido.clienteNombre.toLowerCase().includes(term) ||
-        pedido.clienteEmail.toLowerCase().includes(term) ||
+        pedido.clienteNombre?.toLowerCase().includes(term) ||
+        pedido.clienteEmail?.toLowerCase().includes(term) ||
         pedido.descripcion?.toLowerCase().includes(term)
       );
     }
@@ -67,15 +68,23 @@ export const ScrumBoard = () => {
 
   // Mover pedido entre columnas
   const moverPedido = async (pedidoId, nuevoEstado) => {
+    if (isMoving) return;
+    
+    setIsMoving(true);
     try {
+      console.log(`Moviendo pedido ${pedidoId} a estado: ${nuevoEstado}`);
       await updatePedidoEstado(pedidoId, nuevoEstado);
     } catch (error) {
       console.error('Error al mover pedido:', error);
+    } finally {
+      setIsMoving(false);
     }
   };
 
   // Verificar disponibilidad para análisis
   const handleVerificarDisponibilidad = async (pedidoId) => {
+    if (isVerifying) return;
+    
     setIsVerifying(true);
     try {
       const disponible = await verificarDisponibilidad(pedidoId);
@@ -89,6 +98,7 @@ export const ScrumBoard = () => {
       }
     } catch (error) {
       console.error('Error al verificar disponibilidad:', error);
+      alert('Error al verificar la disponibilidad. Intenta nuevamente.');
     } finally {
       setIsVerifying(false);
     }
@@ -99,11 +109,11 @@ export const ScrumBoard = () => {
     try {
       const factura = await generarFactura(pedidoId);
       if (factura) {
-        await updatePedidoEstado(pedidoId, 'COMPLETADO');
         alert(`Factura ${factura.numeroFactura} generada exitosamente. Total: $${factura.total}`);
       }
     } catch (error) {
       console.error('Error al generar factura:', error);
+      alert('Error al generar la factura. Intenta nuevamente.');
     }
   };
 
@@ -119,7 +129,7 @@ export const ScrumBoard = () => {
     return { total, porEstado };
   }, [pedidos]);
 
-  if (loading) {
+  if (loading && pedidos.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
@@ -127,7 +137,7 @@ export const ScrumBoard = () => {
     );
   }
 
-  if (error) {
+  if (error && pedidos.length === 0) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
         <div className="flex items-center text-red-800">
@@ -158,10 +168,11 @@ export const ScrumBoard = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={fetchPedidos}
-            className="flex items-center btn-secondary"
+            disabled={loading}
+            className="flex items-center btn-secondary disabled:opacity-50"
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Actualizar
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Actualizando...' : 'Actualizar'}
           </button>
         </div>
       </div>
@@ -231,6 +242,7 @@ export const ScrumBoard = () => {
               onVerificarDisponibilidad={handleVerificarDisponibilidad}
               onGenerarFactura={handleGenerarFactura}
               isVerifying={isVerifying}
+              isMoving={isMoving}
               estados={estados}
             />
           ))}
@@ -246,11 +258,12 @@ export const ScrumBoard = () => {
           onVerificarDisponibilidad={handleVerificarDisponibilidad}
           onGenerarFactura={handleGenerarFactura}
           isVerifying={isVerifying}
+          isMoving={isMoving}
         />
       )}
 
       {/* Empty State */}
-      {pedidos.length === 0 && (
+      {pedidos.length === 0 && !loading && (
         <div className="text-center py-16 bg-white rounded-lg border-2 border-dashed border-gray-300">
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Plus className="w-12 h-12 text-gray-400" />
@@ -268,6 +281,18 @@ export const ScrumBoard = () => {
             <Plus className="w-4 h-4 mr-2" />
             Crear Primer Pedido
           </button>
+        </div>
+      )}
+
+      {/* Loading overlay para operaciones */}
+      {(isVerifying || isMoving) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
+            <LoadingSpinner size="md" />
+            <span className="text-gray-700">
+              {isVerifying ? 'Verificando disponibilidad...' : 'Actualizando estado...'}
+            </span>
+          </div>
         </div>
       )}
     </div>

@@ -7,10 +7,10 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "facturas")
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "facturas")
 public class Factura {
     
     @Id

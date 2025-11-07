@@ -2,7 +2,7 @@ spring:
   application:
     name: pc
   datasource:
-    url: jdbc:mysql://localhost:3306/custom_pc_store?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/pc_store?useSSL=false&serverTimezone=UTC
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver

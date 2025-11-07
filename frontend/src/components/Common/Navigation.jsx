@@ -18,14 +18,8 @@ export const Navigation = () => {
 
   const navigationItems = [
     {
-      name: 'Tablero',
-      href: '/',
-      icon: LayoutDashboard,
-      description: 'Vista general de pedidos'
-    },
-    {
       name: 'Pedidos',
-      href: '/pedidos',
+      href: '/',
       icon: FileText,
       description: 'Gestión de pedidos'
     },

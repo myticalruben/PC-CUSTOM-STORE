@@ -22,7 +22,6 @@ function App() {
                 <Route path="/" element={<ScrumBoard />} />
                 <Route path="/nuevo-pedido" element={<PedidoForm />} />
                 <Route path="/inventario" element={<InventoryPanel />} />
-                <Route path="/pedidos" element={<ScrumBoard />} />
               </Routes>
             </main>
           </div>

@@ -57,16 +57,17 @@ const pedidosReducer = (state, action) => {
       };
 
     case ACTION_TYPES.UPDATE_PEDIDO:
+      { const updatedPedidos = state.pedidos.map(pedido =>
+        pedido.id === action.payload.id ? { ...pedido, ...action.payload } : pedido
+      );
       return {
         ...state,
-        pedidos: state.pedidos.map(pedido =>
-          pedido.id === action.payload.id ? action.payload : pedido
-        ),
+        pedidos: updatedPedidos,
         selectedPedido: 
           state.selectedPedido?.id === action.payload.id 
-            ? action.payload 
+            ? { ...state.selectedPedido, ...action.payload }
             : state.selectedPedido
-      };
+      }; }
 
     case ACTION_TYPES.DELETE_PEDIDO:
       return {
@@ -106,8 +107,16 @@ export const PedidosProvider = ({ children }) => {
       dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
       try {
         const pedidos = await pedidoService.getAllPedidos();
-        dispatch({ type: ACTION_TYPES.SET_PEDIDOS, payload: pedidos });
+        // Asegurarnos de que los pedidos tengan el formato correcto
+        const pedidosFormateados = pedidos.map(pedido => ({
+          ...pedido,
+          componentes: pedido.componentes || [],
+          fechaCreacion: pedido.fechaCreacion || pedido.fecha_creacion,
+          fechaActualizacion: pedido.fechaActualizacion || pedido.fecha_actualizacion
+        }));
+        dispatch({ type: ACTION_TYPES.SET_PEDIDOS, payload: pedidosFormateados });
       } catch (error) {
+        console.error('Error fetching pedidos:', error);
         dispatch({ 
           type: ACTION_TYPES.SET_ERROR, 
           payload: 'Error al cargar los pedidos' 
@@ -121,27 +130,49 @@ export const PedidosProvider = ({ children }) => {
       try {
         const nuevoPedido = await pedidoService.createPedido(pedidoData);
         dispatch({ type: ACTION_TYPES.ADD_PEDIDO, payload: nuevoPedido });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
         return nuevoPedido;
       } catch (error) {
+        console.error('Error creating pedido:', error);
         dispatch({ 
           type: ACTION_TYPES.SET_ERROR, 
           payload: 'Error al crear el pedido' 
         });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
         throw error;
       }
     },
 
     // Actualizar estado del pedido
     updatePedidoEstado: async (pedidoId, nuevoEstado) => {
+      dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
       try {
+        console.log('Actualizando estado:', pedidoId, nuevoEstado);
+        
+        // Llamar al servicio para actualizar el estado
         const pedidoActualizado = await pedidoService.updateEstado(pedidoId, nuevoEstado);
-        dispatch({ type: ACTION_TYPES.UPDATE_PEDIDO, payload: pedidoActualizado });
+        
+        console.log('Pedido actualizado:', pedidoActualizado);
+        
+        // Actualizar el estado local
+        dispatch({ 
+          type: ACTION_TYPES.UPDATE_PEDIDO, 
+          payload: {
+            id: pedidoId,
+            estado: nuevoEstado,
+            fechaActualizacion: new Date().toISOString()
+          }
+        });
+        
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
         return pedidoActualizado;
       } catch (error) {
+        console.error('Error updating pedido estado:', error);
         dispatch({ 
           type: ACTION_TYPES.SET_ERROR, 
           payload: 'Error al actualizar el estado del pedido' 
         });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
         throw error;
       }
     },
@@ -152,6 +183,7 @@ export const PedidosProvider = ({ children }) => {
         const disponible = await pedidoService.verificarDisponibilidad(pedidoId);
         return disponible;
       } catch (error) {
+        console.error('Error verificando disponibilidad:', error);
         dispatch({ 
           type: ACTION_TYPES.SET_ERROR, 
           payload: 'Error al verificar disponibilidad' 
@@ -164,8 +196,23 @@ export const PedidosProvider = ({ children }) => {
     generarFactura: async (pedidoId) => {
       try {
         const factura = await pedidoService.generarFactura(pedidoId);
+        
+        // Actualizar el estado del pedido a COMPLETADO después de facturar
+        if (factura) {
+          dispatch({ 
+            type: ACTION_TYPES.UPDATE_PEDIDO, 
+            payload: {
+              id: pedidoId,
+              estado: 'COMPLETADO',
+              fechaActualizacion: new Date().toISOString(),
+              factura: factura
+            }
+          });
+        }
+        
         return factura;
       } catch (error) {
+        console.error('Error generando factura:', error);
         dispatch({ 
           type: ACTION_TYPES.SET_ERROR, 
           payload: 'Error al generar la factura' 
@@ -187,6 +234,40 @@ export const PedidosProvider = ({ children }) => {
     // Limpiar error
     clearError: () => {
       dispatch({ type: ACTION_TYPES.SET_ERROR, payload: null });
+    },
+
+    // Actualizar pedido completo
+    updatePedido: async (pedidoId, pedidoData) => {
+      try {
+        const pedidoActualizado = await pedidoService.updatePedido(pedidoId, pedidoData);
+        dispatch({ type: ACTION_TYPES.UPDATE_PEDIDO, payload: pedidoActualizado });
+        return pedidoActualizado;
+      } catch (error) {
+        console.error('Error updating pedido:', error);
+        dispatch({ 
+          type: ACTION_TYPES.SET_ERROR, 
+          payload: 'Error al actualizar el pedido' 
+        });
+        throw error;
+      }
+    },
+
+    // Eliminar pedido
+    deletePedido: async (pedidoId) => {
+      dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
+      try {
+        await pedidoService.deletePedido(pedidoId);
+        dispatch({ type: ACTION_TYPES.DELETE_PEDIDO, payload: pedidoId });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+      } catch (error) {
+        console.error('Error deleting pedido:', error);
+        dispatch({ 
+          type: ACTION_TYPES.SET_ERROR, 
+          payload: 'Error al eliminar el pedido' 
+        });
+        dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+        throw error;
+      }
     }
   };
 

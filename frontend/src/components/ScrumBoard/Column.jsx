@@ -13,6 +13,7 @@ export const Column = ({
   onVerificarDisponibilidad,
   onGenerarFactura,
   isVerifying,
+  isMoving,
   estados 
 }) => {
   
@@ -41,7 +42,7 @@ export const Column = ({
     const pedidoId = e.dataTransfer.getData('pedidoId');
     const fromEstado = e.dataTransfer.getData('fromEstado');
     
-    if (fromEstado !== estado) {
+    if (fromEstado !== estado && !isMoving) {
       onMoverPedido(parseInt(pedidoId), estado);
     }
   };
@@ -76,6 +77,7 @@ export const Column = ({
             onVerificarDisponibilidad={onVerificarDisponibilidad}
             onGenerarFactura={onGenerarFactura}
             isVerifying={isVerifying}
+            isMoving={isMoving}
             estadosDisponibles={getEstadosDisponibles(estado)}
             currentEstado={estado}
           />

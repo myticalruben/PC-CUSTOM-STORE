@@ -1,15 +1,16 @@
 package com.custom.pc.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "componentes_pedido")
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "componentes_pedido")
 public class ComponentePedido {
     
     @Id
@@ -17,7 +18,8 @@ public class ComponentePedido {
     private Long id;
     
     @ManyToOne
-    @JoinColumn(name = "pedido_id")
+    @JsonBackReference
+    @JoinColumn(name = "pedido_id", referencedColumnName = "id")
     private Pedido pedido;
     
     @ManyToOne

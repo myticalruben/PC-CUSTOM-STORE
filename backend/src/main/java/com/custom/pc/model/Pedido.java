@@ -1,5 +1,7 @@
 package com.custom.pc.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "pedidos")
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "pedidos")
 public class Pedido {
     
     @Id
@@ -29,8 +31,14 @@ public class Pedido {
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
     
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ComponentePedido> componentes = new ArrayList<>();
+    @OneToMany(
+            mappedBy = "pedido",
+            orphanRemoval = true,
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL
+    )
+    @JsonManagedReference
+    private List<ComponentePedido> componentes;
     
     @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
     private Factura factura;

@@ -19,10 +19,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "productos")
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "productos")
 @NamedQueries({
     @NamedQuery(
         name = "Producto.buscaProductoPorCategoriaId",

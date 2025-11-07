@@ -2,11 +2,13 @@ package com.custom.pc.service;
 
 import com.custom.pc.model.*;
 import com.custom.pc.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -17,6 +19,12 @@ public class PedidoService {
     
     @Autowired
     private FacturaRepository facturaRepository;
+
+    @Autowired
+    private ProductoRepository productoRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
     
     //Nos da todos los pedidos ordenados por fecha de actualización descendente
     public List<Pedido> findAllPedidos() {
@@ -30,7 +38,21 @@ public class PedidoService {
     
     //Guarda un pedido nuevo o actualizado
     public Pedido savePedido(Pedido pedido) {
+        if (pedido.getFechaCreacion() == null) pedido.setFechaCreacion(LocalDateTime.now());
+
         pedido.setFechaActualizacion(LocalDateTime.now());
+        List<ComponentePedido> componentePedidos = pedido.getComponentes().stream().map((p) -> {
+            var prod = productoRepository.findById(
+                    p.getProducto().getP_id()
+            ).orElseThrow(() -> new EntityNotFoundException("no se encontro el producto"));
+
+            p.setProducto(prod);
+
+            return p;
+        }).toList();
+
+        pedido.setComponentes(componentePedidos);
+        pedido.setEstado(EstadoPedido.SOLICITUD);
         return pedidoRepository.save(pedido);
     }
     
