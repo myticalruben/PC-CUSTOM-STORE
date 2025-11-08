@@ -1,5 +1,7 @@
 package com.custom.pc.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +24,7 @@ public class Factura {
     private LocalDateTime fechaEmision;
     
     @OneToOne
+    @JsonBackReference
     @JoinColumn(name = "pedido_id")
     private Pedido pedido;
     

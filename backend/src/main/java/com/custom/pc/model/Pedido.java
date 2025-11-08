@@ -1,5 +1,6 @@
 package com.custom.pc.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -41,6 +42,7 @@ public class Pedido {
     private List<ComponentePedido> componentes;
     
     @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private Factura factura;
     
     public Pedido(String clienteNombre, String clienteEmail, String descripcion) {
