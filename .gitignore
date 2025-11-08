@@ -1,6 +1,8 @@
-.old/
-.old/Control_Stock
+
 ./flake.lock
 backend/.idea/
 backend/.gradle/
 backend/build/
+
+.direnv/
+.vscode/
