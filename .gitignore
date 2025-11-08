@@ -4,5 +4,5 @@ backend/.idea/
 backend/.gradle/
 backend/build/
 
-.direnv/
-.vscode/
+.*
+!/.gitignore
