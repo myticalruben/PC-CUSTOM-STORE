@@ -32,7 +32,7 @@ export const Column = ({
     
     return disponibles;
   };
-
+/*
   const handleDragOver = (e) => {
     e.preventDefault();
   };
@@ -46,12 +46,10 @@ export const Column = ({
       onMoverPedido(parseInt(pedidoId), estado);
     }
   };
-
+*/
   return (
     <div 
       className={`w-80 flex-shrink-0 rounded-lg ${color} p-4`}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
     >
       {/* Column Header */}
       <div className="flex items-center justify-between mb-4">
