@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { usePedidos } from '../../contexts/PedidosContext';
-import { useInventory } from '../../contexts/InventoryContext';
-import { Column } from './Column';
-//import { PedidoCard } from './PedidoCard';
+//import { useInventory } from '../../contexts/InventoryContext';
+import { PedidoCard } from './PedidoCard';
 import { PedidoDetails } from './PedidoDetails';
 import { LoadingSpinner } from '../Common/LoadingSpinner';
-import { Plus, Filter, Search, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Plus, Filter, Search, RefreshCw, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 
 export const ScrumBoard = () => {
   const { 
@@ -18,21 +17,63 @@ export const ScrumBoard = () => {
     generarFactura 
   } = usePedidos();
   
-  const { productos } = useInventory();
+  //const { productos } = useInventory();
   
   const [selectedPedido, setSelectedPedido] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('all');
   const [isVerifying, setIsVerifying] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
+  const [expandedEstados, setExpandedEstados] = useState({
+    SOLICITUD: true,
+    ANALISIS: true,
+    ENSAMBLADO: true,
+    FACTURACION: true,
+    COMPLETADO: true
+  });
 
   // Estados del tablero
   const estados = [
-    { key: 'SOLICITUD', title: 'Solicitud', color: 'bg-gray-100', textColor: 'text-gray-700' },
-    { key: 'ANALISIS', title: 'Análisis', color: 'bg-yellow-100', textColor: 'text-yellow-700' },
-    { key: 'ENSAMBLADO', title: 'Ensamblado', color: 'bg-blue-100', textColor: 'text-blue-700' },
-    { key: 'FACTURACION', title: 'Facturación', color: 'bg-purple-100', textColor: 'text-purple-700' },
-    { key: 'COMPLETADO', title: 'Completado', color: 'bg-green-100', textColor: 'text-green-700' }
+    { 
+      key: 'SOLICITUD', 
+      title: 'Solicitud', 
+      color: 'bg-gray-100', 
+      textColor: 'text-gray-700',
+      icon: '📋',
+      description: 'Nuevas solicitudes de PCs personalizadas'
+    },
+    { 
+      key: 'ANALISIS', 
+      title: 'Análisis', 
+      color: 'bg-yellow-100', 
+      textColor: 'text-yellow-700',
+      icon: '🔍',
+      description: 'Verificando disponibilidad de componentes'
+    },
+    { 
+      key: 'ENSAMBLADO', 
+      title: 'Ensamblado', 
+      color: 'bg-blue-100', 
+      textColor: 'text-blue-700',
+      icon: '⚙️',
+      description: 'En proceso de ensamblaje'
+    },
+    { 
+      key: 'FACTURACION', 
+      title: 'Facturación', 
+      color: 'bg-purple-100', 
+      textColor: 'text-purple-700',
+      icon: '🧾',
+      description: 'Listo para facturar'
+    },
+    { 
+      key: 'COMPLETADO', 
+      title: 'Completado', 
+      color: 'bg-green-100', 
+      textColor: 'text-green-700',
+      icon: '✅',
+      description: 'Pedidos finalizados'
+    }
   ];
 
   // Filtrar pedidos
@@ -76,6 +117,7 @@ export const ScrumBoard = () => {
       await updatePedidoEstado(pedidoId, nuevoEstado);
     } catch (error) {
       console.error('Error al mover pedido:', error);
+      alert('Error al actualizar el estado del pedido');
     } finally {
       setIsMoving(false);
     }
@@ -92,6 +134,7 @@ export const ScrumBoard = () => {
       if (disponible) {
         // Si hay disponibilidad, mover a ENSAMBLADO
         await updatePedidoEstado(pedidoId, 'ENSAMBLADO');
+        alert('¡Stock disponible! El pedido ha sido movido a Ensamblado.');
       } else {
         // Si no hay disponibilidad, mantener en ANÁLISIS pero mostrar alerta
         alert('No hay stock suficiente para algunos componentes. El pedido permanecerá en análisis.');
@@ -129,6 +172,23 @@ export const ScrumBoard = () => {
     return { total, porEstado };
   }, [pedidos]);
 
+  // Toggle expandir/colapsar sección
+  const toggleEstado = (estadoKey) => {
+    setExpandedEstados(prev => ({
+      ...prev,
+      [estadoKey]: !prev[estadoKey]
+    }));
+  };
+
+  // Expandir/colapsar todos
+  const toggleAllEstados = (expand) => {
+    const newState = {};
+    estados.forEach(estado => {
+      newState[estado.key] = expand;
+    });
+    setExpandedEstados(newState);
+  };
+
   if (loading && pedidos.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -161,11 +221,23 @@ export const ScrumBoard = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Tablero de Pedidos</h1>
           <p className="text-gray-600 mt-2">
-            Gestiona el flujo de trabajo de PCs personalizadas
+            Vista vertical - Gestión de pedidos de PCs personalizadas
           </p>
         </div>
         
         <div className="flex items-center space-x-3">
+          <button
+            onClick={() => toggleAllEstados(true)}
+            className="btn-secondary text-sm"
+          >
+            Expandir Todo
+          </button>
+          <button
+            onClick={() => toggleAllEstados(false)}
+            className="btn-secondary text-sm"
+          >
+            Colapsar Todo
+          </button>
           <button
             onClick={fetchPedidos}
             disabled={loading}
@@ -181,10 +253,10 @@ export const ScrumBoard = () => {
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <div className="bg-white rounded-lg p-4 shadow-sm border">
           <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-          <div className="text-sm text-gray-500">Total</div>
+          <div className="text-sm text-gray-500">Total Pedidos</div>
         </div>
         {estados.map(estado => (
-          <div key={estado.key} className={`rounded-lg p-4 ${estado.color}`}>
+          <div key={estado.key} className={`rounded-lg p-4 ${estado.color} cursor-pointer hover:shadow-md transition-shadow`}>
             <div className={`text-2xl font-bold ${estado.textColor}`}>
               {stats.porEstado[estado.key] || 0}
             </div>
@@ -226,27 +298,79 @@ export const ScrumBoard = () => {
         </div>
       </div>
 
-      {/* Tablero Scrum */}
-      <div className="overflow-x-auto">
-        <div className="flex space-x-6 min-w-max pb-4">
-          {estados.map(estado => (
-            <Column
-              key={estado.key}
-              title={estado.title}
-              estado={estado.key}
-              color={estado.color}
-              textColor={estado.textColor}
-              pedidos={pedidosPorEstado[estado.key] || []}
-              onPedidoClick={setSelectedPedido}
-              onMoverPedido={moverPedido}
-              onVerificarDisponibilidad={handleVerificarDisponibilidad}
-              onGenerarFactura={handleGenerarFactura}
-              isVerifying={isVerifying}
-              isMoving={isMoving}
-              estados={estados}
-            />
-          ))}
-        </div>
+      {/* Tablero Vertical */}
+      <div className="space-y-4">
+        {estados.map(estado => {
+          const pedidosEnEstado = pedidosPorEstado[estado.key] || [];
+          const isExpanded = expandedEstados[estado.key];
+          
+          return (
+            <div key={estado.key} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              {/* Header de la sección */}
+              <div 
+                className={`p-4 ${estado.color} cursor-pointer hover:opacity-90 transition-opacity`}
+                onClick={() => toggleEstado(estado.key)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xl">{estado.icon}</span>
+                    <div>
+                      <h3 className={`font-semibold text-lg ${estado.textColor}`}>
+                        {estado.title}
+                      </h3>
+                      <p className={`text-sm ${estado.textColor} opacity-80`}>
+                        {estado.description} • {pedidosEnEstado.length} pedidos
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${estado.textColor} bg-white bg-opacity-50`}>
+                      {pedidosEnEstado.length}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp className={`w-5 h-5 ${estado.textColor}`} />
+                    ) : (
+                      <ChevronDown className={`w-5 h-5 ${estado.textColor}`} />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Contenido de la sección */}
+              {isExpanded && (
+                <div className="p-4">
+                  {pedidosEnEstado.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {pedidosEnEstado.map(pedido => (
+                        <PedidoCard
+                          key={pedido.id}
+                          pedido={pedido}
+                          onClick={() => setSelectedPedido(pedido)}
+                          onMoverPedido={moverPedido}
+                          onVerificarDisponibilidad={handleVerificarDisponibilidad}
+                          onGenerarFactura={handleGenerarFactura}
+                          isVerifying={isVerifying}
+                          isMoving={isMoving}
+                          currentEstado={estado.key}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-2xl">{estado.icon}</span>
+                      </div>
+                      <p>No hay pedidos en {estado.title.toLowerCase()}</p>
+                      <p className="text-sm text-gray-400 mt-1">
+                        {estado.description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Modal de Detalles del Pedido */}
@@ -262,7 +386,7 @@ export const ScrumBoard = () => {
         />
       )}
 
-      {/* Empty State */}
+      {/* Empty State General */}
       {pedidos.length === 0 && !loading && (
         <div className="text-center py-16 bg-white rounded-lg border-2 border-dashed border-gray-300">
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

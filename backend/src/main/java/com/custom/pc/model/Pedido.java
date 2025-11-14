@@ -44,7 +44,11 @@ public class Pedido {
     @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
     @JsonManagedReference
     private Factura factura;
-    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     public Pedido(String clienteNombre, String clienteEmail, String descripcion) {
         this.clienteNombre = clienteNombre;
         this.clienteEmail = clienteEmail;

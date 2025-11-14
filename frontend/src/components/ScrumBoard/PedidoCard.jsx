@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StatusBadge } from '../Common/StatusBadge';
-import { MoreVertical, User, Mail, Calendar, Cpu, CheckCircle, FileText } from 'lucide-react';
+import { MoreVertical, User, Mail, Calendar, Cpu, CheckCircle, FileText, ArrowRight } from 'lucide-react';
 
 export const PedidoCard = ({ 
   pedido, 
@@ -9,15 +9,10 @@ export const PedidoCard = ({
   onVerificarDisponibilidad,
   onGenerarFactura,
   isVerifying,
-  estadosDisponibles,
+  isMoving,
   currentEstado 
 }) => {
   const [showActions, setShowActions] = useState(false);
-
-  const handleDragStart = (e) => {
-    e.dataTransfer.setData('pedidoId', pedido.id);
-    e.dataTransfer.setData('fromEstado', currentEstado);
-  };
 
   const calcularTotal = () => {
     if (!pedido.componentes) return 0;
@@ -31,100 +26,134 @@ export const PedidoCard = ({
     return pedido.componentes.reduce((count, comp) => count + comp.cantidad, 0);
   };
 
-  const handleAction = (action) => {
-    setShowActions(false);
+  // Obtener acciones disponibles según el estado actual
+  const getAccionesDisponibles = () => {
+    const acciones = [];
     
-    switch (action) {
-      case 'verificar':
-        onVerificarDisponibilidad(pedido.id);
+    switch (currentEstado) {
+      case 'SOLICITUD':
+        acciones.push({
+          label: 'Mover a Análisis',
+          action: () => onMoverPedido(pedido.id, 'ANALISIS'),
+          icon: ArrowRight,
+          color: 'text-yellow-600'
+        });
         break;
-      case 'facturar':
-        onGenerarFactura(pedido.id);
+        
+      case 'ANALISIS':
+        acciones.push(
+          {
+            label: isVerifying ? 'Verificando...' : 'Verificar Stock',
+            action: () => onVerificarDisponibilidad(pedido.id),
+            icon: CheckCircle,
+            color: 'text-blue-600',
+            disabled: isVerifying
+          },
+          {
+            label: 'Saltar a Ensamblado',
+            action: () => onMoverPedido(pedido.id, 'ENSAMBLADO'),
+            icon: ArrowRight,
+            color: 'text-green-600'
+          }
+        );
         break;
+        
+      case 'ENSAMBLADO':
+        acciones.push({
+          label: 'Mover a Facturación',
+          action: () => onMoverPedido(pedido.id, 'FACTURACION'),
+          icon: ArrowRight,
+          color: 'text-purple-600'
+        });
+        break;
+        
+      case 'FACTURACION':
+        acciones.push({
+          label: 'Generar Factura',
+          action: () => onGenerarFactura(pedido.id),
+          icon: FileText,
+          color: 'text-green-600'
+        });
+        break;
+        
       default:
         break;
     }
+    
+    return acciones;
   };
 
+  const acciones = getAccionesDisponibles();
+
   return (
-    <div
-      draggable
-      onDragStart={handleDragStart}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow duration-200"
-      onClick={onClick}
-    >
+    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all duration-200 group">
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold text-gray-900 text-sm line-clamp-1">
+            <h4 
+              className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:text-blue-600"
+              onClick={onClick}
+              title={pedido.clienteNombre}
+            >
               {pedido.clienteNombre}
             </h4>
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowActions(!showActions);
-                }}
-                className="p-1 text-gray-400 hover:text-gray-600"
-              >
-                <MoreVertical className="w-4 h-4" />
-              </button>
-
-              {/* Dropdown Actions */}
-              {showActions && (
-                <div 
-                  className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
-                  onClick={(e) => e.stopPropagation()}
+            
+            {/* Botón de acciones */}
+            {acciones.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowActions(!showActions);
+                  }}
+                  className="p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <div className="py-1">
-                    {/* Acciones específicas por estado */}
-                    {currentEstado === 'ANALISIS' && (
-                      <button
-                        onClick={() => handleAction('verificar')}
-                        disabled={isVerifying}
-                        className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        {isVerifying ? 'Verificando...' : 'Verificar Stock'}
-                      </button>
-                    )}
+                  <MoreVertical className="w-4 h-4" />
+                </button>
 
-                    {currentEstado === 'FACTURACION' && (
-                      <button
-                        onClick={() => handleAction('facturar')}
-                        className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Generar Factura
-                      </button>
-                    )}
-
-                    {/* Movimiento entre estados */}
-                    {estadosDisponibles.map(estado => (
-                      <button
-                        key={estado.key}
-                        onClick={() => onMoverPedido(pedido.id, estado.key)}
-                        className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        Mover a {estado.title}
-                      </button>
-                    ))}
+                {/* Dropdown Actions */}
+                {showActions && (
+                  <div 
+                    className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="py-1">
+                      {acciones.map((accion, index) => {
+                        const Icon = accion.icon;
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              accion.action();
+                              setShowActions(false);
+                            }}
+                            disabled={accion.disabled || isMoving}
+                            className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            <Icon className={`w-4 h-4 mr-2 ${accion.color}`} />
+                            {accion.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
           <StatusBadge status={pedido.estado} />
         </div>
       </div>
 
-      {/* Client Info */}
+      {/* Información compacta */}
       <div className="space-y-2 mb-3">
         <div className="flex items-center text-sm text-gray-600">
-          <Mail className="w-3 h-3 mr-2" />
-          <span className="truncate">{pedido.clienteEmail}</span>
+          <Mail className="w-3 h-3 mr-2 flex-shrink-0" />
+          <span className="truncate" title={pedido.clienteEmail}>
+            {pedido.clienteEmail}
+          </span>
         </div>
         
         {pedido.descripcion && (
@@ -134,18 +163,18 @@ export const PedidoCard = ({
         )}
       </div>
 
-      {/* Components Summary */}
+      {/* Resumen rápido */}
       <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
         <div className="flex items-center">
           <Cpu className="w-3 h-3 mr-1" />
-          <span>{getComponentesCount()} componentes</span>
+          <span>{getComponentesCount()} comp.</span>
         </div>
         <div className="font-semibold text-blue-600">
           ${calcularTotal().toFixed(2)}
         </div>
       </div>
 
-      {/* Dates */}
+      {/* Fechas y acciones rápidas */}
       <div className="flex items-center justify-between text-xs text-gray-400 border-t pt-2">
         <div className="flex items-center">
           <Calendar className="w-3 h-3 mr-1" />
@@ -154,12 +183,37 @@ export const PedidoCard = ({
           </span>
         </div>
         
-        {pedido.fechaActualizacion && (
-          <span>
-            Actualizado: {new Date(pedido.fechaActualizacion).toLocaleDateString()}
-          </span>
+        {/* Acciones rápidas visibles */}
+        {acciones.length > 0 && (
+          <div className="flex space-x-1">
+            {acciones.slice(0, 1).map((accion, index) => {
+              const Icon = accion.icon;
+              return (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    accion.action();
+                  }}
+                  disabled={accion.disabled || isMoving}
+                  className={`p-1 rounded text-xs ${accion.color} hover:bg-gray-100 disabled:opacity-50`}
+                  title={accion.label}
+                >
+                  <Icon className="w-3 h-3" />
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
+
+      {/* Botón de ver detalles (siempre visible en móvil) */}
+      <button
+        onClick={onClick}
+        className="w-full mt-3 py-2 text-xs text-blue-600 hover:bg-blue-50 rounded-lg border border-blue-200 transition-colors md:hidden"
+      >
+        Ver Detalles
+      </button>
     </div>
   );
 };
